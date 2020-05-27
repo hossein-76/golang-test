@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/lib/pq"
 	"encoding/json"
+	"io/ioutil"
 	"fmt"
 	"net/http"
 	"github.com/gorilla/mux"
@@ -19,8 +20,15 @@ type User struct {
 	last_name string
 }
 func mainPage(w http.ResponseWriter, r *http.Request){
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
 	var user User
-	err := json.NewDecoder(r.Body).Decode(&user)
+	err = json.Unmarshal(b, &user)
 	if err != nil {
 		panic(err)
 	}
